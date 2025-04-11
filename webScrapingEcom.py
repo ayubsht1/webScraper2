@@ -3,8 +3,8 @@ import random
 from bs4 import BeautifulSoup
 
 proxies_list = {
-    '154.117.220.13:3128',
-    '103.147.134.121:8080'
+'154.117.220.13:3128',
+'207.246.234.115:4669'
 }
 
 user_agents = [
@@ -24,7 +24,7 @@ headers = {'User-Agent': random.choice(user_agents),
            }
 
 try:
-    response = requests.get(url, headers=headers, proxies={"http":proxy, "https":proxy}, timeout=500)
+    response = requests.get(url, headers=headers, proxies={"http":proxy, "https":proxy}, timeout=100)
     if response.status_code == 200:
         soup = BeautifulSoup(response.text, 'html.parser')
         print(soup.prettify())
