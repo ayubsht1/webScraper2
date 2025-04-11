@@ -4,7 +4,7 @@ from bs4 import BeautifulSoup
 
 proxies_list = {
 '154.117.220.13:3128',
-'207.246.234.115:4669'
+# '207.246.234.115:4669'
 }
 
 user_agents = [
