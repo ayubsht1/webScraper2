@@ -1,30 +1,34 @@
 import requests
-import random
 from bs4 import BeautifulSoup
 import time
 
-# Step 1: Get Proxies from spys.one
-def get_proxies():
+def get_proxies_revised():
     url = "https://spys.one/en/free-proxy-list/"
     headers = {
         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)"
     }
     try:
-        # Removed xf5=1 to get all types of proxies (Transparent, Anonymous, Elite)
-        response = requests.post(url, headers=headers, data={"xpp": "5", "xf1": "0", "xf2": "0", "xf4": "0"})
+        response = requests.get(url, headers=headers)
+        response.raise_for_status()  # Raise an exception for bad status codes
         soup = BeautifulSoup(response.text, "html.parser")
-        proxy_table = soup.find_all("tr", {"class": "spy1xx"}) + soup.find_all("tr", {"class": "spy1x"})
-        
-        proxies = []
-        for row in proxy_table:
-            columns = row.find_all("td")
-            if len(columns) > 0:
-                ip_port_script = columns[0].get_text(strip=True)
-                if ":" in ip_port_script:
-                    proxies.append(ip_port_script)
-        return proxies
-    except Exception as e:
-        print("Failed to retrieve proxies:", e)
+        proxy_table = soup.find("table", class_="spy1xx")  # Try to find the main proxy table
+
+        if proxy_table:
+            proxies = []
+            rows = proxy_table.find_all("tr")[2:]  # Skip header rows
+            for row in rows:
+                columns = row.find_all("td")
+                if len(columns) >= 2:
+                    # This is a simplified assumption - the actual structure is more complex
+                    ip_port_element = columns[0].find("font", class_="spy14") or columns[0].find("a")
+                    if ip_port_element and ":" in ip_port_element.get_text(strip=True):
+                        proxies.append(ip_port_element.get_text(strip=True))
+            return proxies
+        else:
+            print("Proxy table not found.")
+            return []
+    except requests.exceptions.RequestException as e:
+        print(f"Failed to retrieve or parse proxies: {e}")
         return []
 
 # Step 2: Try each proxy to fetch Craigslist page
@@ -44,7 +48,7 @@ def scrape_with_proxy(url):
         'DNT': '1',
     }
 
-    proxies_list = get_proxies()
+    proxies_list = get_proxies_revised()
     print(f"Total proxies found: {len(proxies_list)}")
 
     for proxy in proxies_list:
